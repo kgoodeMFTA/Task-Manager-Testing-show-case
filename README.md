@@ -63,14 +63,6 @@ This starts the API, then runs Newman, Karate, JMeter, Artillery, Gatling, and a
 - **Gatling**: a Scala simulation with two injection profiles (`rampUsers` + `constantUsersPerSec`) and global pass/fail assertions on latency and success rate.
 - **Automation scripting**: `scripts/run-all-tests.sh` orchestrates every tool locally; `.github/workflows/ci.yml` runs the identical pipeline on every push/PR and uploads all reports as build artifacts.
 
-## Using this as a portfolio piece
-
-To make this your own before pushing to GitHub:
-1. Update `terraform/backend.tf` with your own TFE organization/hostname (or remove the `cloud` block if you don't have TFE access to demo against).
-2. Swap the license/author info if desired.
-3. Push to a new GitHub repo and enable GitHub Actions — the badge below will go green once CI runs.
-4. Optionally add a GitHub Actions status badge to the top of this README once the repo is public:
-   `![CI](https://github.com/<you>/<repo>/actions/workflows/ci.yml/badge.svg)`
 
 ## License
 
