@@ -1,0 +1,60 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 10
+      arrivalRate: 5
+      name: "Warm up"
+    - duration: 30
+      arrivalRate: 10
+      rampTo: 40
+      name: "Ramp up load"
+    - duration: 20
+      arrivalRate: 40
+      name: "Sustained peak load"
+  processor: "./processor.js"
+  defaults:
+    headers:
+      content-type: "application/json"
+  plugins:
+    expect: {}
+
+scenarios:
+  - name: "Task lifecycle"
+    flow:
+      - get:
+          url: "/health"
+          expect:
+            - statusCode: 200
+      - post:
+          url: "/api/tasks"
+          json:
+            title: "Artillery load test task"
+            completed: false
+          capture:
+            - json: "$.id"
+              as: "taskId"
+          expect:
+            - statusCode: 201
+      - get:
+          url: "/api/tasks/{{ taskId }}"
+          expect:
+            - statusCode: 200
+      - put:
+          url: "/api/tasks/{{ taskId }}"
+          json:
+            completed: true
+          expect:
+            - statusCode: 200
+      - function: "logCompletion"
+      - delete:
+          url: "/api/tasks/{{ taskId }}"
+          expect:
+            - statusCode: 204
+
+  - name: "Browse tasks"
+    weight: 3
+    flow:
+      - get:
+          url: "/api/tasks"
+          expect:
+            - statusCode: 200

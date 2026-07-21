@@ -1,0 +1,14 @@
+{
+  "name": "task-manager-api",
+  "version": "1.0.0",
+  "description": "Simple REST API used as the system-under-test for the multi-tool QA/automation showcase (Postman, SoapUI, Karate, JMeter, Artillery, Gatling).",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project xmlns:con="http://eviware.com/soapui/config" activeEnvironment="Default" name="TaskManagerAPI" resourceRoot="">
+  <con:interface xsi:type="con:RestService" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="TaskManagerAPI REST" type="rest">
+    <con:resource id="tasks-resource" name="tasks" path="/api/tasks">
+      <con:method id="get-tasks" name="List Tasks" method="GET">
+        <con:request name="List Tasks Request" mediaType="application/json">
+          <con:endpoint>http://localhost:3000</con:endpoint>
+          <con:assertion type="Valid HTTP Status Codes" name="Valid HTTP Status Codes">
+            <con:configuration><codes>200</codes></con:configuration>
+          </con:assertion>
+        </con:request>
+      </con:method>
+      <con:method id="post-tasks" name="Create Task" method="POST">
+        <con:request name="Create Task Request" mediaType="application/json">
+          <con:endpoint>http://localhost:3000</con:endpoint>
+          <con:request><![CDATA[{
+  "title": "Write SoapUI tests",
+  "completed": false
+}]]></con:request>
+          <con:assertion type="Valid HTTP Status Codes" name="Status is 201">
+            <con:configuration><codes>201</codes></con:configuration>
+          </con:assertion>
+          <con:assertion type="JsonPath Match" name="Title matches">
+            <con:configuration>
+              <path>$.title</path>
+              <content>Write SoapUI tests</content>
+            </con:configuration>
+          </con:assertion>
+          <con:assertion type="Script Assertion" name="Capture generated task id">
+            <con:configuration>
+              <scriptText><![CDATA[
+def json = new groovy.json.JsonSlurper().parseText(messageExchange.response.contentAsString)
+context.testCase.setPropertyValue("taskId", json.id.toString())
+]]></scriptText>
+            </con:configuration>
+          </con:assertion>
+        </con:request>
+      </con:method>
+    </con:resource>
+    <con:resource id="task-by-id-resource" name="taskById" path="/api/tasks/{id}">
+      <con:parameter default="1"><con:name>id</con:name><con:style>TEMPLATE</con:style></con:parameter>
+      <con:method id="get-task" name="Get Task By Id" method="GET">
+        <con:request name="Get Task Request" mediaType="application/json">
+          <con:endpoint>http://localhost:3000</con:endpoint>
+          <con:parameter><con:name>id</con:name><con:value>${#TestCase#taskId}</con:value></con:parameter>
+          <con:assertion type="Valid HTTP Status Codes" name="Status is 200">
+            <con:configuration><codes>200</codes></con:configuration>
+          </con:assertion>
+        </con:request>
+      </con:method>
+      <con:method id="put-task" name="Update Task" method="PUT">
+        <con:request name="Update Task Request" mediaType="application/json">
+          <con:endpoint>http://localhost:3000</con:endpoint>
+          <con:parameter><con:name>id</con:name><con:value>${#TestCase#taskId}</con:value></con:parameter>
+          <con:request><![CDATA[{
+  "completed": true
+}]]></con:request>
+          <con:assertion type="Valid HTTP Status Codes" name="Status is 200">
+            <con:configuration><codes>200</codes></con:configuration>
+          </con:assertion>
+          <con:assertion type="JsonPath Match" name="Completed is true">
+            <con:configuration>
+              <path>$.completed</path>
+              <content>true</content>
+            </con:configuration>
+          </con:assertion>
+        </con:request>
+      </con:method>
+      <con:method id="delete-task" name="Delete Task" method="DELETE">
+        <con:request name="Delete Task Request" mediaType="application/json">
+          <con:endpoint>http://localhost:3000</con:endpoint>
+          <con:parameter><con:name>id</con:name><con:value>${#TestCase#taskId}</con:value></con:parameter>
+          <con:assertion type="Valid HTTP Status Codes" name="Status is 204">
+            <con:configuration><codes>204</codes></con:configuration>
+          </con:assertion>
+        </con:request>
+      </con:method>
+    </con:resource>
+  </con:interface>
+  <con:testSuite id="crud-suite" name="Task CRUD TestSuite">
+    <con:testCase id="crud-case" name="Full CRUD Lifecycle" failOnError="true" failTestCaseOnErrors="true">
+      <con:testStep type="restrequest" name="1 - Create Task">
+        <con:config xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <con:restRequest name="Create Task Request"/>
+        </con:config>
+      </con:testStep>
+      <con:testStep type="restrequest" name="2 - Get Task By Id">
+        <con:config xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <con:restRequest name="Get Task Request"/>
+        </con:config>
+      </con:testStep>
+      <con:testStep type="restrequest" name="3 - Update Task">
+        <con:config xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <con:restRequest name="Update Task Request"/>
+        </con:config>
+      </con:testStep>
+      <con:testStep type="restrequest" name="4 - Delete Task">
+        <con:config xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <con:restRequest name="Delete Task Request"/>
+        </con:config>
+      </con:testStep>
+    </con:testCase>
+    <con:testCase id="load-case" name="Generated LoadTest - List Tasks">
+      <con:loadTest name="List Tasks LoadTest" testStep="List Tasks Request" limitType="TIME" limit="30000" threads="10"/>
+    </con:testCase>
+  </con:testSuite>
+</con:soapui-project>
